@@ -2,7 +2,7 @@ import pygame
 import random
 
 WIDTH = 20
-TILE_WIDTH = 20
+TILE_WIDTH = 40
 RES = (WIDTH*TILE_WIDTH, WIDTH*TILE_WIDTH)
 
 
@@ -15,7 +15,12 @@ class Snake:
 
     def move(self, new_direction = None):
         if new_direction is not None:
-            self.direction = new_direction
+            ok = True
+            if self.direction == (1, 0) and new_direction == (-1, 0): ok = False
+            if self.direction == (-1, 0) and new_direction == (1, 0): ok = False
+            if self.direction == (0, 1) and new_direction == (0, -1): ok = False
+            if self.direction == (0, -1) and new_direction == (0, 1): ok = False
+            if ok: self.direction = new_direction
 
         self.body.pop()
         self.body.insert(0,
@@ -83,6 +88,7 @@ def main():
     apple = Apple(snake)
 
     running = True
+    stack = []
     while running:
         direction = None
         for event in pygame.event.get():
@@ -91,17 +97,20 @@ def main():
 
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    direction = (-1, 0)
+                    stack.append((-1, 0))
                 elif event.key == pygame.K_RIGHT:
-                    direction = (1, 0)
+                    stack.append((1, 0))
                 elif event.key == pygame.K_UP:
-                    direction = (0, -1)
+                    stack.append((0, -1))
                 elif event.key == pygame.K_DOWN:
-                    direction = (0, 1)
-
+                    stack.append((0, 1))
 
         screen.fill((0, 0, 0))
 
+        if len(stack) == 0:
+            direction = None
+        else:
+            direction = stack.pop(0)
         snake.move(direction)
         if snake.check_eat(apple):
             print("+1")
@@ -115,8 +124,6 @@ def main():
         pygame.display.flip()
 
         pygame.time.wait(100)
-
-        # quit()
 
 if __name__ == "__main__":
     main()
