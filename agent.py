@@ -3,7 +3,7 @@ import numpy as np
 
 class Agent:
 
-    actions = [
+    possible_actions = [
         (1, 0),
         (-1, 0),
         (0, 1),
@@ -28,11 +28,32 @@ class Agent:
             tf.keras.layers.Dense(4)
         ])
 
+        self.states = []
+        self.actions = []
+        self.rewards = []
+        self.next_states = []
+        self.dones = []
+
+        self.max_memory_length = 100000
+
     def predict(self, game_frame):
         img = np.array(game_frame)[np.newaxis, :]
-        print("debug : img.shape :", img.shape)
         return self.model(img)
 
     def predict_action(self, game_frame):
         pred = self.predict(game_frame)
-        return self.actions[np.argmax(pred[0])]
+        pred = np.argmax(pred[0])
+        return self.possible_actions[pred], pred
+
+    def add_observation(self, state, action, reward, next_state, done):
+        self.states.append(state)
+        self.actions.append(action)
+        self.rewards.append(reward)
+        self.next_states.append(next_state)
+        self.dones.append(done)
+
+        if len(self.states) > self.max_memory_length: self.states.pop(0)
+        if len(self.actions) > self.max_memory_length: self.actions.pop(0)
+        if len(self.rewards) > self.max_memory_length: self.rewards.pop(0)
+        if len(self.next_states) > self.max_memory_length: self.next_states.pop(0)
+        if len(self.dones) > self.max_memory_length: self.dones.pop(0)
