@@ -35,6 +35,11 @@ class Agent:
         self.dones = []
 
         self.max_memory_length = 100000
+        self.batch_size = 20
+        self.gamma = 0.95
+
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=1e-2)
+        self.loss_fn = tf.keras.losses.mean_squared_error
 
     def predict(self, game_frame):
         img = np.array(game_frame)[np.newaxis, :]
@@ -50,10 +55,27 @@ class Agent:
         self.actions.append(action)
         self.rewards.append(reward)
         self.next_states.append(next_state)
-        self.dones.append(done)
+        self.dones.append(int(done))
 
         if len(self.states) > self.max_memory_length: self.states.pop(0)
         if len(self.actions) > self.max_memory_length: self.actions.pop(0)
         if len(self.rewards) > self.max_memory_length: self.rewards.pop(0)
         if len(self.next_states) > self.max_memory_length: self.next_states.pop(0)
         if len(self.dones) > self.max_memory_length: self.dones.pop(0)
+
+    def get_random_batch(self, batch_size=20):
+        index = np.random.randint(low=0, high=len(self.states), size=batch_size)
+        return np.array(self.states)[index], np.array(self.actions)[index], np.array(self.rewards)[index], np.array(self.next_states)[index], np.array(self.dones)[index]
+
+    def train(self):
+        states, actions, rewards, next_states, dones = self.get_random_batch()
+        max_next_next_states = self.gamma * np.max(self.model.predict(next_states), axis=1)
+        mask = tf.one_hot(actions, depth=len(self.possible_actions))
+        target_q_values = rewards * (1 - dones) + max_next_next_states
+        with tf.GradientTape() as tape:
+            predictions = self.model(states)
+            predictions = tf.math.reduce_max(mask * predictions, axis = 1)
+            loss = self.loss_fn(target_q_values, predictions)
+            # print(loss)
+        grads = tape.gradient(loss, self.model.trainable_variables)
+        self.optimizer.apply_gradients(zip(grads, self.model.trainable_variables))

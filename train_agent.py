@@ -21,6 +21,9 @@ def get_state(snake, apple):
     return game_frame
 
 running = True
+
+nb_frame = 0
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -49,6 +52,13 @@ while running:
 
     agent.add_observation(game_frame, action, reward, next_state, done)
 
+    if nb_frame > 50:
+        agent.train()
+
     pygame.display.flip()
+
+    nb_frame += 1
+    if nb_frame > 100:
+        nb_frame=51
 
     pygame.time.wait(100)
