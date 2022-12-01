@@ -23,6 +23,7 @@ def get_state(snake, apple):
 running = True
 
 nb_frame = 0
+nb_turn = 0
 
 while running:
     for event in pygame.event.get():
@@ -44,6 +45,7 @@ while running:
         done = True
         snake = Snake()
         apple = Apple(snake)
+        nb_turn = 0
 
     next_state = get_state(snake, apple)
 
@@ -57,8 +59,15 @@ while running:
 
     pygame.display.flip()
 
+    if nb_turn > 200:
+        snake = Snake()
+        apple = Apple(snake)
+        nb_turn = 0
+
     nb_frame += 1
     if nb_frame > 100:
         nb_frame=51
+
+    nb_turn += 1
 
     pygame.time.wait(100)

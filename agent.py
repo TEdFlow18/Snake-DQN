@@ -72,10 +72,10 @@ class Agent:
         max_next_next_states = self.gamma * np.max(self.model.predict(next_states), axis=1)
         mask = tf.one_hot(actions, depth=len(self.possible_actions))
         target_q_values = rewards * (1 - dones) + max_next_next_states
+        target_q_values = target_q_values.reshape(-1, 1)
         with tf.GradientTape() as tape:
-            predictions = self.model(states)
-            predictions = tf.math.reduce_max(mask * predictions, axis = 1)
+            predictions = self.model(states) * mask
+            predictions = tf.reduce_sum(predictions, axis = 1, keepdims=True)
             loss = self.loss_fn(target_q_values, predictions)
-            # print(loss)
         grads = tape.gradient(loss, self.model.trainable_variables)
         self.optimizer.apply_gradients(zip(grads, self.model.trainable_variables))
