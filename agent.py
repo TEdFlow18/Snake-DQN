@@ -34,9 +34,9 @@ class Agent:
         self.next_states = []
         self.dones = []
 
-        self.max_memory_length = 100000
-        self.batch_size = 20
-        self.gamma = 0.95
+        self.max_memory_length = 1000000
+        self.batch_size = 50
+        self.gamma = 0.90
 
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=1e-2)
         self.loss_fn = tf.keras.losses.mean_squared_error
@@ -71,7 +71,8 @@ class Agent:
         states, actions, rewards, next_states, dones = self.get_random_batch()
         max_next_next_states = self.gamma * np.max(self.model.predict(next_states), axis=1)
         mask = tf.one_hot(actions, depth=len(self.possible_actions))
-        target_q_values = rewards * (1 - dones) + max_next_next_states
+        #target_q_values = rewards * (1 - dones) + max_next_next_states
+        target_q_values = rewards + max_next_next_states
         target_q_values = target_q_values.reshape(-1, 1)
         with tf.GradientTape() as tape:
             predictions = self.model(states) * mask
