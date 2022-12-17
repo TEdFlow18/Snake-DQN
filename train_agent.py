@@ -14,7 +14,7 @@ for _ in range(5):
 
 agent = Agent(WIDTH)
 
-def get_state(snake, apple):
+def get_state(snake, apples):
     game_frame = np.zeros(shape = (WIDTH, WIDTH, 1))
     for tile in snake.body[1:]:
         game_frame[tile[1], tile[0], 0] = 1 # body tile
@@ -46,7 +46,7 @@ while running:
         if snake.check_eat(apple): reward = 1
 
     if snake.check_death():
-        reward = -10
+        reward = -1
         done = True
         snake = Snake()
         apples = []
@@ -75,7 +75,8 @@ while running:
         nb_turn = 0
 
     nb_frame += 1
-    if nb_frame > 100:
+    if nb_frame > 10000:
+        agent.save()
         nb_frame = 51
 
     nb_turn += 1

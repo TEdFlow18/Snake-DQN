@@ -67,6 +67,12 @@ class Agent:
         index = np.random.randint(low=0, high=len(self.states), size=batch_size)
         return np.array(self.states)[index], np.array(self.actions)[index], np.array(self.rewards)[index], np.array(self.next_states)[index], np.array(self.dones)[index]
 
+    def load_model(self, filename):
+        self.model = tf.keras.models.load_model(filename)
+
+    def save(self):
+        self.model.save("model.h5")
+
     def train(self):
         states, actions, rewards, next_states, dones = self.get_random_batch()
         max_next_next_states = self.gamma * np.max(self.model.predict(next_states), axis=1)
@@ -79,4 +85,4 @@ class Agent:
             predictions = tf.reduce_sum(predictions, axis = 1, keepdims=True)
             loss = self.loss_fn(target_q_values, predictions)
         grads = tape.gradient(loss, self.model.trainable_variables)
-        self.optimizer.apply_gradients(zip(grads, self.model.trainable_variables))
+        self.optimizer.apply_gradients(zip(grads, self.model.trainable_variables), verbose=0)

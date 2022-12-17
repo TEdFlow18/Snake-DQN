@@ -10,3 +10,9 @@ To train an agent, run :
 ```
 python3 train_agent.py
 ```
+
+To test a trained agent, run :
+```
+python3 test_agent filepath.h5
+```
+If you just want to try the AI, there is already one trained in the model.h5 file.
